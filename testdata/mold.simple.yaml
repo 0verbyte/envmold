@@ -1,0 +1,24 @@
+- name: foo
+  value: "bar"
+  type: string
+  required: false
+
+- name: bar
+  value: "bar foo bar"
+  type: string
+  required: false
+
+- name: debug
+  value: true
+  type: boolean
+  required: false
+
+- name: baseNumber
+  value: 10
+  type: number
+  required: false
+
+- name: x
+  value: 1.10
+  type: number
+  required: false
