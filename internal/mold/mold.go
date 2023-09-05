@@ -165,3 +165,7 @@ func (m *MoldTemplate) GetAllVariables() []MoldTemplateVariable {
 	}
 	return variables
 }
+
+func (m *MoldTemplate) WriteEnvironment(w Writer) error {
+	return w.Write(m.variables)
+}
