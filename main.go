@@ -70,5 +70,7 @@ func main() {
 		log.Fatalln("Failed to create mold", err)
 	}
 
-	moldData.WriteEnvironment(getMoldEnvironmentWriter(outputWriter))
+	if err := moldData.WriteEnvironment(getMoldEnvironmentWriter(outputWriter)); err != nil {
+		log.Fatalf("Failed to write mold to environment when using writer '%s': %v\n", outputWriter, err)
+	}
 }

@@ -25,7 +25,7 @@ const (
 	MoldDataTypeBoolean = "boolean"
 )
 
-// MoldTemplateVariable data representation for a mold template variable
+// MoldTemplateVariable data representation for a mold template variable.
 type MoldTemplateVariable struct {
 	Name     string      `yaml:"name"`
 	Value    interface{} `yaml:"value"`
@@ -37,7 +37,7 @@ func (m *MoldTemplateVariable) String() string {
 	return fmt.Sprintf("%s = %v (type=%s, required=%t)", m.Name, m.Value, m.Type, m.Required)
 }
 
-// MoldTemplate data representation for the MoldTemplate
+// MoldTemplate data representation for the MoldTemplate.
 type MoldTemplate struct {
 	variables map[string]MoldTemplateVariable
 }
@@ -84,7 +84,7 @@ func New(r io.Reader) (*MoldTemplate, error) {
 	}, nil
 }
 
-// Generate runs the main logic to check for any required fields in the mold template and fills the values
+// Generate runs the main logic to check for any required fields in the mold template and fills the values.
 func (m *MoldTemplate) Generate() error {
 	if m.variables == nil {
 		return ErrEmptyMold
@@ -157,7 +157,7 @@ func (m *MoldTemplate) GetVariable(key string) (*MoldTemplateVariable, error) {
 	return nil, ErrEnvironmentVariableDoesNotExist
 }
 
-// GetAllVariables returns all the variables in the mold
+// GetAllVariables returns all the variables in the mold.
 func (m *MoldTemplate) GetAllVariables() []MoldTemplateVariable {
 	variables := []MoldTemplateVariable{}
 	for _, v := range m.variables {
