@@ -40,6 +40,8 @@ func (m *MoldTemplateVariable) String() string {
 // MoldTemplate data representation for the MoldTemplate.
 type MoldTemplate struct {
 	variables map[string]MoldTemplateVariable
+
+	promptReader *bufio.Reader
 }
 
 // New creates a new MoldTemplate from an io.Reader. Use the helper functions to read from the respective input.
@@ -80,7 +82,8 @@ func New(r io.Reader) (*MoldTemplate, error) {
 	}
 
 	return &MoldTemplate{
-		variables: moldTemplateVariables,
+		variables:    moldTemplateVariables,
+		promptReader: bufio.NewReader(os.Stdin),
 	}, nil
 }
 
@@ -97,8 +100,7 @@ func (m *MoldTemplate) Generate() error {
 
 		if v.Value != "" && v.Value != nil {
 			fmt.Printf("'%s' is a required field, with the value of '%s'. Would you like to overwrite this value (yes/no)? ", v.Name, v.Value)
-			reader := bufio.NewReader(os.Stdin)
-			answer, err := reader.ReadString('\n')
+			answer, err := m.promptReader.ReadString('\n')
 			if err != nil {
 				return err
 			}
@@ -110,9 +112,8 @@ func (m *MoldTemplate) Generate() error {
 		}
 
 		fmt.Printf("Enter a value for %s (type=%s): ", v.Name, v.Type)
-		reader := bufio.NewReader(os.Stdin)
-		value, err := reader.ReadString('\n')
-		if err != nil {
+		value, err := m.promptReader.ReadString('\n')
+		if err != nil && err != io.EOF {
 			return err
 		}
 		value = strings.TrimSpace(value)
@@ -168,4 +169,8 @@ func (m *MoldTemplate) GetAllVariables() []MoldTemplateVariable {
 
 func (m *MoldTemplate) WriteEnvironment(w Writer) error {
 	return w.Write(m.variables)
+}
+
+func (m *MoldTemplate) SetPromptReader(rd io.Reader) {
+	m.promptReader = bufio.NewReader(rd)
 }
