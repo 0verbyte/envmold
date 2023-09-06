@@ -80,3 +80,53 @@ func TestVerifyTypeConstraint(t *testing.T) {
 		return
 	}
 }
+
+func TestMoldPromptReader(t *testing.T) {
+	var moldTemplate = `
+- name: foo
+  value: bar
+  type: string
+  required: true
+
+- name: debug
+  value: true
+  type: boolean
+  required: false
+`
+
+	m, err := New(strings.NewReader(moldTemplate))
+	if err != nil {
+		t.Errorf("Failed to create new mold: %v", err)
+		return
+	}
+
+	var promptText = `yes
+data`
+
+	m.SetPromptReader(strings.NewReader(promptText))
+
+	if err := m.Generate(); err != nil {
+		t.Errorf("Failed to generate mold: %v", err)
+		return
+	}
+
+	specs := []struct {
+		input  string
+		output string
+	}{
+		{input: "foo", output: "data"},
+	}
+
+	for _, spec := range specs {
+		v, err := m.GetVariable(spec.input)
+		if err != nil {
+			t.Errorf("Failed to get mold get %s: %v", spec.input, err)
+			return
+		}
+
+		if v.Value != spec.output {
+			t.Errorf("Expected: %s, got %s", spec.output, v.Value)
+			return
+		}
+	}
+}
