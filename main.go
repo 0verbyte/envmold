@@ -11,8 +11,14 @@ import (
 )
 
 const (
-	appName    = "mold"
-	appVersion = "v0.1.0"
+	appName = "mold"
+)
+
+var (
+	// set via ldflags at compile time.
+	version = "dev"
+	commit  = "unknown"
+	date    = "unknown"
 )
 
 var (
@@ -26,7 +32,7 @@ func init() {
 	flag.StringVar(&outputWriter, "output", "stdout", "Where environment variables will be written. File path or stdout")
 	flag.BoolVar(&debug, "debug", false, "Enables debug logging")
 	flag.Usage = func() {
-		fmt.Fprintf(os.Stderr, "Usage of %s (%s):\n", appName, appVersion)
+		fmt.Fprintf(os.Stderr, "Usage of %s (%s):\n", appName, appVersionString())
 		flag.PrintDefaults()
 	}
 	flag.Parse()
@@ -34,6 +40,10 @@ func init() {
 	if debug {
 		log.SetFlags(log.LstdFlags | log.Lshortfile)
 	}
+}
+
+func appVersionString() string {
+	return fmt.Sprintf("%s-%s-%s", version, commit, date)
 }
 
 func createMold(r io.Reader) (*mold.MoldTemplate, error) {
@@ -57,7 +67,7 @@ func getMoldEnvironmentWriter(writerType string) mold.Writer {
 }
 
 func main() {
-	log.Printf("Running %s (%s)\n", appName, appVersion)
+	log.Printf("Running %s (%s)\n", appName, appVersionString())
 
 	f, err := os.Open(moldTemplate)
 	if err != nil {
