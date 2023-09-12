@@ -1,5 +1,5 @@
 package mold
 
 type Writer interface {
-	Write(map[string]MoldTemplateVariable) error
+	Write([]MoldTemplateVariable) error
 }

@@ -53,7 +53,7 @@ func (m *MoldTemplateVariable) HasTag(tag string) bool {
 
 // MoldTemplate data representation for the MoldTemplate.
 type MoldTemplate struct {
-	variables map[string]MoldTemplateVariable
+	variables []MoldTemplateVariable
 
 	promptReader *bufio.Reader
 }
@@ -70,7 +70,7 @@ func New(r io.Reader) (*MoldTemplate, error) {
 		return nil, err
 	}
 
-	moldTemplateVariables := make(map[string]MoldTemplateVariable)
+	moldTemplateVariables := []MoldTemplateVariable{}
 	for _, moldTemplateVariable := range moldTemplate {
 		if moldTemplateVariable.Name == "" {
 			return nil, ErrMissingVariableName
@@ -92,7 +92,7 @@ func New(r io.Reader) (*MoldTemplate, error) {
 			}
 		}
 
-		moldTemplateVariables[moldTemplateVariable.Name] = moldTemplateVariable
+		moldTemplateVariables = append(moldTemplateVariables, moldTemplateVariable)
 	}
 
 	return &MoldTemplate{
@@ -166,19 +166,17 @@ func (m *MoldTemplate) Generate() error {
 
 // GetVariable gets a MoldTemplateVariable by key. If the key does not exist an error will be returned.
 func (m *MoldTemplate) GetVariable(key string) (*MoldTemplateVariable, error) {
-	if v, ok := m.variables[key]; ok {
-		return &v, nil
+	for _, v := range m.variables {
+		if v.Name == key {
+			return &v, nil
+		}
 	}
 	return nil, ErrEnvironmentVariableDoesNotExist
 }
 
 // GetAllVariables returns all the variables in the mold.
 func (m *MoldTemplate) GetAllVariables() []MoldTemplateVariable {
-	variables := []MoldTemplateVariable{}
-	for _, v := range m.variables {
-		variables = append(variables, v)
-	}
-	return variables
+	return m.variables
 }
 
 func (m *MoldTemplate) WriteEnvironment(w Writer) error {

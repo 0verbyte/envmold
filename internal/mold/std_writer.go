@@ -12,7 +12,7 @@ const (
 
 type StdoutWriter struct{}
 
-func (w *StdoutWriter) Write(envVars map[string]MoldTemplateVariable) error {
+func (w *StdoutWriter) Write(envVars []MoldTemplateVariable) error {
 	lines := []string{}
 	for _, v := range envVars {
 		valueFmt := "%s"
