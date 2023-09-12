@@ -225,3 +225,88 @@ func TestTagsAll(t *testing.T) {
 		}
 	}
 }
+
+func TestTagFiltering(t *testing.T) {
+	var moldTemplate = `
+- name: foo
+  value: "bar"
+  type: string
+  required: true
+  tags: ["test"]
+
+- name: debug
+  value: true
+  type: boolean
+  required: false
+  tags:
+    - debug
+    - local
+`
+
+	m, err := New(strings.NewReader(moldTemplate), &[]string{"test"})
+	if err != nil {
+		t.Errorf("Failed to create new mold: %v", err)
+		return
+	}
+
+	specs := []struct {
+		envVar string
+		err    error
+	}{
+		{envVar: "foo", err: nil},
+		{envVar: "debug", err: ErrEnvironmentVariableDoesNotExist},
+	}
+
+	for _, spec := range specs {
+		if _, err := m.GetVariable(spec.envVar); err != spec.err {
+			t.Errorf("Expected %+v, got %+v", spec.err, err)
+		}
+	}
+}
+
+func TestMultiTagFiltering(t *testing.T) {
+	var moldTemplate = `
+- name: foo
+  value: "bar"
+  type: string
+  required: true
+  tags: ["test"]
+
+- name: debug
+  value: true
+  type: boolean
+  required: false
+  tags:
+    - debug
+    - local
+
+- name: log_type
+  value: stdout
+  type: string
+  required: false
+  tags:
+    - staging
+    - local
+`
+
+	m, err := New(strings.NewReader(moldTemplate), &[]string{"test", "debug"})
+	if err != nil {
+		t.Errorf("Failed to create new mold: %v", err)
+		return
+	}
+
+	specs := []struct {
+		envVar string
+		err    error
+	}{
+		{envVar: "foo", err: nil},
+		{envVar: "debug", err: nil},
+		{envVar: "log_type", err: ErrEnvironmentVariableDoesNotExist},
+	}
+
+	for _, spec := range specs {
+		if _, err := m.GetVariable(spec.envVar); err != spec.err {
+			t.Errorf("Expected %+v, got %+v", spec.err, err)
+		}
+	}
+}
