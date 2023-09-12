@@ -31,21 +31,39 @@ type MoldTemplateVariable struct {
 	Value    interface{} `yaml:"value"`
 	Type     string      `yaml:"type"`
 	Required bool        `yaml:"required"`
+	Tags     []string    `yaml:"tags"`
 }
 
 func (m *MoldTemplateVariable) String() string {
 	return fmt.Sprintf("%s = %v (type=%s, required=%t)", m.Name, m.Value, m.Type, m.Required)
 }
 
+func (m *MoldTemplateVariable) AllTags() []string {
+	return m.Tags
+}
+
+func (m *MoldTemplateVariable) HasTag(tag string) bool {
+	for _, v := range m.Tags {
+		if v == tag {
+			return true
+		}
+	}
+	return false
+}
+
+func (m *MoldTemplateVariable) HasTags() bool {
+	return len(m.Tags) > 0
+}
+
 // MoldTemplate data representation for the MoldTemplate.
 type MoldTemplate struct {
-	variables map[string]MoldTemplateVariable
+	variables []MoldTemplateVariable
 
 	promptReader *bufio.Reader
 }
 
 // New creates a new MoldTemplate from an io.Reader. Use the helper functions to read from the respective input.
-func New(r io.Reader) (*MoldTemplate, error) {
+func New(r io.Reader, tags *[]string) (*MoldTemplate, error) {
 	b, err := io.ReadAll(r)
 	if err != nil {
 		return nil, err
@@ -56,10 +74,25 @@ func New(r io.Reader) (*MoldTemplate, error) {
 		return nil, err
 	}
 
-	moldTemplateVariables := make(map[string]MoldTemplateVariable)
+	moldTemplateVariables := []MoldTemplateVariable{}
 	for _, moldTemplateVariable := range moldTemplate {
 		if moldTemplateVariable.Name == "" {
 			return nil, ErrMissingVariableName
+		}
+
+		var skipEnvVar bool
+		if tags != nil && moldTemplateVariable.HasTags() {
+			skipEnvVar = true
+			for _, tag := range *tags {
+				if moldTemplateVariable.HasTag(tag) {
+					skipEnvVar = false
+					break
+				}
+			}
+		}
+
+		if skipEnvVar {
+			continue
 		}
 
 		// Check for type constraint on the value field
@@ -78,7 +111,7 @@ func New(r io.Reader) (*MoldTemplate, error) {
 			}
 		}
 
-		moldTemplateVariables[moldTemplateVariable.Name] = moldTemplateVariable
+		moldTemplateVariables = append(moldTemplateVariables, moldTemplateVariable)
 	}
 
 	return &MoldTemplate{
@@ -152,19 +185,17 @@ func (m *MoldTemplate) Generate() error {
 
 // GetVariable gets a MoldTemplateVariable by key. If the key does not exist an error will be returned.
 func (m *MoldTemplate) GetVariable(key string) (*MoldTemplateVariable, error) {
-	if v, ok := m.variables[key]; ok {
-		return &v, nil
+	for _, v := range m.variables {
+		if v.Name == key {
+			return &v, nil
+		}
 	}
 	return nil, ErrEnvironmentVariableDoesNotExist
 }
 
 // GetAllVariables returns all the variables in the mold.
 func (m *MoldTemplate) GetAllVariables() []MoldTemplateVariable {
-	variables := []MoldTemplateVariable{}
-	for _, v := range m.variables {
-		variables = append(variables, v)
-	}
-	return variables
+	return m.variables
 }
 
 func (m *MoldTemplate) WriteEnvironment(w Writer) error {

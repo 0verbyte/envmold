@@ -6,6 +6,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"strings"
 
 	"github.com/0verbyte/envmold/internal/mold"
 )
@@ -25,12 +26,14 @@ var (
 	moldTemplate string
 	outputWriter string
 	debug        bool
+	tags         string
 )
 
 func init() {
 	flag.StringVar(&moldTemplate, "template", "mold.yaml", "Path to the mold environment template file")
 	flag.StringVar(&outputWriter, "output", "stdout", "Where environment variables will be written. File path or stdout")
 	flag.BoolVar(&debug, "debug", false, "Enables debug logging")
+	flag.StringVar(&tags, "tags", "", "Filter environment variables matching tags")
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, "Usage of %s (%s):\n", appName, appVersionString())
 		flag.PrintDefaults()
@@ -47,7 +50,7 @@ func appVersionString() string {
 }
 
 func createMold(r io.Reader) (*mold.MoldTemplate, error) {
-	m, err := mold.New(r)
+	m, err := mold.New(r, getTags())
 	if err != nil {
 		return nil, err
 	}
@@ -64,6 +67,14 @@ func getMoldEnvironmentWriter(writerType string) mold.Writer {
 	default:
 		return &mold.StdoutWriter{}
 	}
+}
+
+func getTags() *[]string {
+	if tags == "" {
+		return nil
+	}
+	s := strings.Split(tags, ",")
+	return &s
 }
 
 func main() {

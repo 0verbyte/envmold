@@ -17,16 +17,21 @@ Note: mold expects an array of environment variables with the following structur
   type: string
   # whether the variable is required or not. If required is true, then mold will ask to fill the value.
   required: false
+  # tags are used to filter environment variables. An OR expression will be applied to these tags.
+  # List syntax can also be used to define tags.
+  tags: []
 ```
 
 The following command line options are available for mold.
 ```
 % ./bin/mold -h
-Usage of mold (v0.1.0):
+Usage of mold (dev-unknown-unknown):
   -debug
     	Enables debug logging
   -output string
     	Where environment variables will be written. File path or stdout (default "stdout")
+  -tags string
+    	Filter environment variables matching tags
   -template string
     	Path to the mold environment template file (default "mold.yaml")
 ```
