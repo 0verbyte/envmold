@@ -51,6 +51,10 @@ func (m *MoldTemplateVariable) HasTag(tag string) bool {
 	return false
 }
 
+func (m *MoldTemplateVariable) HasTags() bool {
+	return len(m.Tags) > 0
+}
+
 // MoldTemplate data representation for the MoldTemplate.
 type MoldTemplate struct {
 	variables []MoldTemplateVariable
@@ -59,7 +63,7 @@ type MoldTemplate struct {
 }
 
 // New creates a new MoldTemplate from an io.Reader. Use the helper functions to read from the respective input.
-func New(r io.Reader) (*MoldTemplate, error) {
+func New(r io.Reader, tags *[]string) (*MoldTemplate, error) {
 	b, err := io.ReadAll(r)
 	if err != nil {
 		return nil, err
@@ -74,6 +78,21 @@ func New(r io.Reader) (*MoldTemplate, error) {
 	for _, moldTemplateVariable := range moldTemplate {
 		if moldTemplateVariable.Name == "" {
 			return nil, ErrMissingVariableName
+		}
+
+		var skipEnvVar bool
+		if tags != nil && moldTemplateVariable.HasTags() {
+			skipEnvVar = true
+			for _, tag := range *tags {
+				if moldTemplateVariable.HasTag(tag) {
+					skipEnvVar = false
+					break
+				}
+			}
+		}
+
+		if skipEnvVar {
+			continue
 		}
 
 		// Check for type constraint on the value field

@@ -18,7 +18,7 @@ func TestMoldNew(t *testing.T) {
   required: false
 `
 
-	if _, err := New(strings.NewReader(moldTemplate)); err != nil {
+	if _, err := New(strings.NewReader(moldTemplate), nil); err != nil {
 		t.Errorf("Failed to create new mold: %v", err)
 		return
 	}
@@ -37,7 +37,7 @@ func TestCheckKeysInMold(t *testing.T) {
   required: false
 `
 
-	mold, err := New(strings.NewReader(moldTemplate))
+	mold, err := New(strings.NewReader(moldTemplate), nil)
 	if err != nil {
 		t.Errorf("Failed to create new mold: %v", err)
 		return
@@ -75,7 +75,7 @@ func TestVerifyTypeConstraint(t *testing.T) {
   required: false
 `
 
-	if _, err := New(strings.NewReader(moldTemplate)); err != ErrInvalidDataType {
+	if _, err := New(strings.NewReader(moldTemplate), nil); err != ErrInvalidDataType {
 		t.Errorf("Failed to create new mold: %v", err)
 		return
 	}
@@ -94,7 +94,7 @@ func TestMoldPromptReader(t *testing.T) {
   required: false
 `
 
-	m, err := New(strings.NewReader(moldTemplate))
+	m, err := New(strings.NewReader(moldTemplate), nil)
 	if err != nil {
 		t.Errorf("Failed to create new mold: %v", err)
 		return
@@ -145,7 +145,7 @@ func TestHasTag(t *testing.T) {
   required: false
 `
 
-	m, err := New(strings.NewReader(moldTemplate))
+	m, err := New(strings.NewReader(moldTemplate), nil)
 	if err != nil {
 		t.Errorf("Failed to create new mold: %v", err)
 		return
@@ -187,7 +187,7 @@ func TestTagsAll(t *testing.T) {
   required: false
 `
 
-	m, err := New(strings.NewReader(moldTemplate))
+	m, err := New(strings.NewReader(moldTemplate), nil)
 	if err != nil {
 		t.Errorf("Failed to create new mold: %v", err)
 		return

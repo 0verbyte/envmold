@@ -2,6 +2,7 @@
   value: "bar"
   type: string
   required: false
+  tags: [production]
 
 - name: bar
   value: "bar foo bar"
@@ -12,6 +13,9 @@
   value: true
   type: boolean
   required: false
+  tags:
+    - local
+    - dev
 
 - name: baseNumber
   value: 10
@@ -22,3 +26,4 @@
   value: 1.10
   type: number
   required: false
+  tags: ["local", "test"]
