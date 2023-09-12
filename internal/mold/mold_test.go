@@ -130,3 +130,98 @@ data`
 		}
 	}
 }
+
+func TestHasTag(t *testing.T) {
+	var moldTemplate = `
+- name: foo
+  value: "bar"
+  type: string
+  required: true
+  tags: ["local", "dev"]
+
+- name: debug
+  value: true
+  type: boolean
+  required: false
+`
+
+	m, err := New(strings.NewReader(moldTemplate))
+	if err != nil {
+		t.Errorf("Failed to create new mold: %v", err)
+		return
+	}
+
+	specs := []struct {
+		envVar string
+		input  string
+		output bool
+	}{
+		{envVar: "foo", input: "local", output: true},
+		{envVar: "foo", input: "production", output: false},
+	}
+
+	for _, spec := range specs {
+		envVar, err := m.GetVariable(spec.envVar)
+		if err != nil {
+			t.Errorf("Got error: %v", err)
+			return
+		}
+		got := envVar.HasTag(spec.input)
+		if got != spec.output {
+			t.Errorf("Failed tag lookup for %s. Expected %t, got %t", spec.input, spec.output, got)
+		}
+	}
+}
+
+func TestTagsAll(t *testing.T) {
+	var moldTemplate = `
+- name: foo
+  value: "bar"
+  type: string
+  required: true
+  tags: ["local", "dev"]
+
+- name: debug
+  value: true
+  type: boolean
+  required: false
+`
+
+	m, err := New(strings.NewReader(moldTemplate))
+	if err != nil {
+		t.Errorf("Failed to create new mold: %v", err)
+		return
+	}
+
+	specs := []struct {
+		envVar string
+		output []string
+	}{
+		{envVar: "foo", output: []string{"local", "dev"}},
+		{envVar: "debug", output: []string{}},
+	}
+
+	contains := func(items []string, key string) bool {
+		for _, item := range items {
+			if key == item {
+				return true
+			}
+		}
+		return false
+	}
+
+	for _, spec := range specs {
+		envVar, err := m.GetVariable(spec.envVar)
+		if err != nil {
+			t.Errorf("Got error: %v", err)
+			return
+		}
+
+		gotTags := envVar.AllTags()
+		for _, expected := range spec.output {
+			if !contains(gotTags, expected) {
+				t.Errorf("Expected %s in tags, got tags %s", expected, strings.Join(gotTags, ", "))
+			}
+		}
+	}
+}

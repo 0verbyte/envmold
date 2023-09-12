@@ -31,10 +31,24 @@ type MoldTemplateVariable struct {
 	Value    interface{} `yaml:"value"`
 	Type     string      `yaml:"type"`
 	Required bool        `yaml:"required"`
+	Tags     []string    `yaml:"tags"`
 }
 
 func (m *MoldTemplateVariable) String() string {
 	return fmt.Sprintf("%s = %v (type=%s, required=%t)", m.Name, m.Value, m.Type, m.Required)
+}
+
+func (m *MoldTemplateVariable) AllTags() []string {
+	return m.Tags
+}
+
+func (m *MoldTemplateVariable) HasTag(tag string) bool {
+	for _, v := range m.Tags {
+		if v == tag {
+			return true
+		}
+	}
+	return false
 }
 
 // MoldTemplate data representation for the MoldTemplate.
