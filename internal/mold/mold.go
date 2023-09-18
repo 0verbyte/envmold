@@ -127,7 +127,27 @@ func (m *MoldTemplate) Generate() error {
 	}
 
 	for k, v := range m.variables {
-		if !v.Required {
+		useSecretManager := false
+		switch val := v.Value.(type) {
+		case string:
+			secretManager, err := checkAndUseSecretManager(val)
+			if err == ErrSecretManagerNotFound {
+				break
+			}
+			if err != nil && err != ErrSecretManagerNotFound {
+				return err
+			}
+
+			val, err = secretManager.GetValue(val)
+			if err != nil {
+				return err
+			}
+			v.Value = val
+			m.variables[k] = v
+			useSecretManager = true
+		}
+
+		if useSecretManager || !v.Required {
 			continue
 		}
 
