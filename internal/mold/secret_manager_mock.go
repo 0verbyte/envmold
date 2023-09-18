@@ -15,6 +15,7 @@ type SecretManagerMock struct {
 func (s *SecretManagerMock) Seed() {
 	s.values = map[string]string{}
 	s.values["test/foo"] = "mock_bar"
+	s.values["test/creds"] = "mock_creds"
 }
 
 // Mold passes the value as defined in the template, including the secret manager identifier.
@@ -31,6 +32,9 @@ func getKeyFromMoldValue(s string) string {
 }
 
 func (s *SecretManagerMock) GetValue(key string) (string, error) {
+	if s.values == nil {
+		s.Seed()
+	}
 	if v, ok := s.values[getKeyFromMoldValue(key)]; ok {
 		return v, nil
 	}

@@ -310,3 +310,56 @@ func TestMultiTagFiltering(t *testing.T) {
 		}
 	}
 }
+
+func TestSecretManagerMockVariable(t *testing.T) {
+	var moldTemplate = `
+- name: foo
+  value: mock("test/foo")
+  type: string
+  required: false
+
+- name: creds
+  value: mock("test/creds")
+  type: string
+  required: false
+
+- name: debug
+  value: true
+  type: boolean
+  required: false
+  tags:
+    - debug
+    - local
+`
+
+	m, err := New(strings.NewReader(moldTemplate), nil)
+	if err != nil {
+		t.Errorf("Failed to create new mold: %v", err)
+		return
+	}
+	if err := m.Generate(); err != nil {
+		t.Errorf("Failed to generate mold: %v", err)
+		return
+	}
+
+	specs := []struct {
+		envVar   string
+		expected interface{}
+	}{
+		{envVar: "foo", expected: "mock_bar"},
+		{envVar: "creds", expected: "mock_creds"},
+		{envVar: "debug", expected: true},
+	}
+
+	for _, spec := range specs {
+		got, err := m.GetVariable(spec.envVar)
+		if err != nil {
+			t.Errorf("Expected %s, got error: %+v", spec.expected, err)
+			return
+		}
+		if got.Value != spec.expected {
+			t.Errorf("Expected %s, got %s", spec.expected, got.Value)
+			return
+		}
+	}
+}

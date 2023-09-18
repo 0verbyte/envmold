@@ -24,5 +24,5 @@ func checkAndUseSecretManager(s string) (SecretManager, error) {
 			return secretManager, nil
 		}
 	}
-	return nil, ErrSecretManagerKeyDoesNotExist
+	return nil, ErrSecretManagerNotFound
 }
