@@ -15,7 +15,8 @@ type SecretManager interface {
 }
 
 var secretManagerKeysToTypes = map[string]SecretManager{
-	"mock": &SecretManagerMock{},
+	"mock":  &SecretManagerMock{},
+	"vault": &SecretManagerVault{},
 }
 
 func checkAndUseSecretManager(s string) (SecretManager, error) {
